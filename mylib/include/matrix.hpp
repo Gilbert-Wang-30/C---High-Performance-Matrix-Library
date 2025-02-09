@@ -7,6 +7,7 @@
 class Matrix {
 private:
     double* data;
+    double* data_T;
     int rows, cols;
 
     double get(int offset) const;
@@ -21,9 +22,8 @@ public:
     ~Matrix();
 
     // Operator overloading
-    double get(int i, int j) const;
-    double* operator[](int row);
-    const double* operator[](int row) const;
+    double get_row(int i, int j) const;
+    double get_col(int i, int j) const;
     Matrix operator+(const Matrix& other) const;
     Matrix operator-(const Matrix& other) const;
     Matrix operator*(double scalar) const;
@@ -37,6 +37,9 @@ public:
     Matrix& operator/=(double scalar);
     inline bool operator==(const Matrix& other) const;
     inline bool operator!=(const Matrix& other) const;
+
+    // Setter functions
+    double set(int i, int j, double val);
 
     // Getter functions
     double getRows() const;

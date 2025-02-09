@@ -17,6 +17,10 @@ build/libmylib.a: $(OBJ)
 main: main.cpp build/libmylib.a
 	$(CC) $(CFLAGS) main.cpp $(LDFLAGS) -o main
 
+# Benchmarks
+benchmark: benchmark.cpp build/libmylib.a
+	$(CC) $(CFLAGS) benchmark.cpp $(LDFLAGS) -o benchmark
+
 # Run
 run: main
 	./main

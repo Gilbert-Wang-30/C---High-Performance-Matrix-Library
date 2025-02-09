@@ -5,34 +5,37 @@ Matrix::Matrix() : rows(0), cols(0), data(nullptr) { }
 
 Matrix::Matrix(int rows, int cols) : rows(rows), cols(cols) {
     data = new double[rows * cols];
+    data_T = new double[rows * cols];
 }
 
 Matrix::Matrix(int rows, int cols, double val) : rows(rows), cols(cols) {
     data = new double[rows * cols];
+    data_T = new double[rows * cols];
     for (int i = 0; i < rows* cols; i++) {
         data[i] = val;
+        data_T[i] = val;
     }
 }
 
 // Destructor
 Matrix::~Matrix() {
     delete[] data;
+    delete[] data_T;
 }
 
 double Matrix::get(int offset) const {
     return data[offset];
 }
 
+double Matrix::get_row(int i, int j) const {
+    return data[i * cols + j];
+}
+
+double Matrix::get_col(int i, int j) const {
+    return data_T[j * rows + i];
+}
+
 // Operator overloading
-double* Matrix::operator[](int row) {
-    return &data[row * cols];  // Returns pointer to the row start
-}
-
-const double* Matrix::operator[](int row) const {
-    return &data[row * cols];  // Const version
-}
-
-
 Matrix Matrix::operator+(const Matrix& other) const{
     return add(other);
 }
@@ -80,11 +83,16 @@ bool Matrix::operator!=(const Matrix& other) const{
     return !(*this == other);
 }
 
+// Setter function
+double Matrix::set(int i, int j, double val) {
+    data[i * cols + j] = val;
+    data_T[j * rows + i] = val;
+    return val;
+}
 
 // Getters
 double Matrix::getRows() const { return rows; }
 double Matrix::getCols() const { return cols; }
-double Matrix::get(int i, int j) const { return data[i * cols + j]; }
 
 
 // Print function
@@ -107,6 +115,7 @@ Matrix Matrix::add(const Matrix& other) const {
     Matrix result(rows, cols, 0.0);
     for (int i = 0; i < rows* cols; i++) {
         result.data[i] = data[i] + other.data[i];
+        result.data_T[i] = data_T[i] + other.data_T[i];
     }
     return result;
 }
@@ -116,6 +125,7 @@ Matrix Matrix::subtract(const Matrix& other) const {
     Matrix result(rows, cols, 0.0);
     for (int i = 0; i < rows* cols; i++) {
         result.data[i] = data[i] - other.data[i];
+        result.data_T[i] = data_T[i] - other.data_T[i];
     }
     return result;
 }
@@ -125,6 +135,7 @@ Matrix Matrix::multiply(double scalar) const {
     Matrix result(rows, cols, 0.0);
     for (int i = 0; i < rows* cols; i++) {
         result.data[i] = data[i] * scalar;
+        result.data_T[i] = data_T[i] * scalar;
     }
     return result;
 }
@@ -137,18 +148,39 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     Matrix result(rows, other.cols, 0.0);
 
-    // Multiply matrices
-    //todo could be optimized
-    for (int i = 0; i < rows; i++) {
-        int row_offset = i * cols;
-        int other_col_offset = i* other.cols;
-        for (int k = 0; k < cols; k++) {  // Move k loop outwards
-            int k_offset = k * other.cols;
-            int temp = data[row_offset + k];  // Cache data[i][k]
-            for (int j = 0; j < other.cols; j++) {
-                result.data[other_col_offset + j] += temp * other.data[k_offset + j];
+    const int BLOCK_SIZE = 256;  // Tune for best performance
+
+    for (int i = 0; i < rows; i += BLOCK_SIZE) {
+        for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
+            for (int k = 0; k < cols; k += BLOCK_SIZE) {
+
+                // Multiply small blocks of A and B^T
+                for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
+                    int ii_offset = ii * cols;  //Precompute row start in `data`
+                    int result_offset = ii * other.cols;  //Precompute row start in `result.data`
+
+                    for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
+                        int jj_offset = jj * other.rows;  //Precompute column start in `data_T`
+                        double sum = 0.0;
+
+                        for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
+                            sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];  //Precomputed indices
+                        }
+
+                        result.data[result_offset + jj] += sum;
+                    }
+                }
             }
         }
     }
+
+    // Compute transposed matrix for result
+    for (int i = 0; i < result.rows; i++) {
+        int row_offset = i * result.cols;  //Precompute row start
+        for (int j = 0; j < result.cols; j++) {
+            result.data_T[j * result.rows + i] = result.data[row_offset + j];  //Faster transpose
+        }
+    }
+
     return result;
 }
