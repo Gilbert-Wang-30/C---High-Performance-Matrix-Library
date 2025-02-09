@@ -1,0 +1,25 @@
+CC = g++
+CFLAGS = -std=c++17 -Iinclude
+LDFLAGS = -Lbuild -lmylib
+OBJ = build/matrix.o
+
+all: build/libmylib.a main
+
+# Compile object files
+build/matrix.o: src/matrix.cpp include/matrix.hpp
+	$(CC) $(CFLAGS) -c src/matrix.cpp -o $@
+
+# Create Static Library
+build/libmylib.a: $(OBJ)
+	ar rcs $@ $^
+
+# Compile main program
+main: main.cpp build/libmylib.a
+	$(CC) $(CFLAGS) main.cpp $(LDFLAGS) -o main
+
+# Run
+run: main
+	./main
+
+clean:
+	rm -f build/*.o build/*.a main
