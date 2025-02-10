@@ -1,4 +1,11 @@
 #include "../include/matrix.hpp"
+#include "../include/simd_utils.hpp"
+#include <immintrin.h>  // AVX, AVX2 intrinsics
+#ifdef __ARM_NEON
+    #include <arm_neon.h>  // Only include NEON if compiling for macOS ARM
+#endif
+
+
 
 // Constructor
 Matrix::Matrix() : rows(0), cols(0), data(nullptr), data_T(nullptr) { }
@@ -150,35 +157,71 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     const int BLOCK_SIZE = 32;  // Tune for best performance
 
-    for (int i = 0; i < rows; i += BLOCK_SIZE) {
-        for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
-            for (int k = 0; k < cols; k += BLOCK_SIZE) {
+    if (hasAVX512()) {
+        std::cout << "Using AVX-512 optimization\n";
+        for (int i = 0; i < rows; i += BLOCK_SIZE) {
+            for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
+                for (int k = 0; k < cols; k += BLOCK_SIZE) {
+                    for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
+                        int ii_offset = ii * cols;
+                        int result_offset = ii * other.cols;
 
-                // Multiply small blocks of A and B^T
-                for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
-                    int ii_offset = ii * cols;  //Precompute row start in `data`
-                    int result_offset = ii * other.cols;  //Precompute row start in `result.data`
+                        for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
+                            int jj_offset = jj * other.rows;
+                            double sum = 0.0;
 
-                    for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
-                        int jj_offset = jj * other.rows;  //Precompute column start in `data_T`
-                        double sum = 0.0;
+                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 8) {
+                                __m512d a = _mm512_loadu_pd(&data[ii_offset + kk]);
+                                __m512d b = _mm512_loadu_pd(&other.data_T[jj_offset + kk]);
+                                __m512d c = _mm512_mul_pd(a, b);
+                                sum += _mm512_reduce_add_pd(c);
+                            }
 
-                        for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
-                            sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];  //Precomputed indices
+                            result.data[result_offset + jj] += sum;
                         }
+                    }
+                }
+            }
+        }
+    } else if (hasAVX2()) {
+        std::cout << "Using AVX2 optimization\n";
+        for (int i = 0; i < rows; i += BLOCK_SIZE) {
+            for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
+                for (int k = 0; k < cols; k += BLOCK_SIZE) {
+                    for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
+                        int ii_offset = ii * cols;
+                        int result_offset = ii * other.cols;
 
-                        result.data[result_offset + jj] += sum;
+                        for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
+                            int jj_offset = jj * other.rows;
+                            double sum = 0.0;
+
+                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 4) {
+                                __m256d a = _mm256_loadu_pd(&data[ii_offset + kk]);
+                                __m256d b = _mm256_loadu_pd(&other.data_T[jj_offset + kk]);
+                                __m256d c = _mm256_mul_pd(a, b);
+                                sum += _mm256_reduce_add_pd(c);
+                            }
+
+                            result.data[result_offset + jj] += sum;
+                        }
                     }
                 }
             }
         }
     }
 
-    // Compute transposed matrix for result
-    for (int i = 0; i < result.rows; i++) {
-        int row_offset = i * result.cols;  //Precompute row start
-        for (int j = 0; j < result.cols; j++) {
-            result.data_T[j * result.rows + i] = result.data[row_offset + j];  //Faster transpose
+
+    else {
+        std::cout << "Using scalar fallback\n";
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < other.cols; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < cols; k++) {
+                    sum += data[i * cols + k] * other.data[k * other.cols + j];
+                }
+                result.data[i * other.cols + j] = sum;
+            }
         }
     }
 

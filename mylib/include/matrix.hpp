@@ -3,6 +3,19 @@
 
 #include <iostream>
 #include <vector>
+#include <immintrin.h>  // AVX, AVX2 intrinsics
+
+
+
+inline double _mm256_reduce_add_pd(__m256d v) {
+    __m128d sum1 = _mm256_castpd256_pd128(v);
+    __m128d sum2 = _mm256_extractf128_pd(v, 1);
+    sum1 = _mm_add_pd(sum1, sum2);
+    return _mm_cvtsd_f64(_mm_hadd_pd(sum1, sum1));
+}
+
+
+
 
 class Matrix {
 private:
@@ -50,6 +63,9 @@ public:
     Matrix subtract(const Matrix& other) const;
     Matrix multiply(double scalar) const;
     Matrix multiply(const Matrix& other) const;
+
+
+    
 };
 
 #endif // MATRIX_HPP
