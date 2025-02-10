@@ -6,10 +6,9 @@
 
 class Matrix {
 private:
+    int rows, cols;
     double* data;
     double* data_T;
-    int rows, cols;
-
     double get(int offset) const;
 
 public:
