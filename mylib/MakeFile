@@ -7,15 +7,15 @@ all: build/libmylib.a main benchmark
 
 # Compile object files
 build/matrix.o: src/matrix.cpp include/matrix.hpp
-	$(CC) $(CFLAGS) -c src/matrix.cpp -o $@
+	$(CC) $(CFLAGS) -c src/matrix.cpp -o build/matrix.o
 
 # Create Static Library
-build/libmylib.a: $(OBJ)
+build/libmylib.a: build/matrix.o
 	ar rcs $@ $^
 
 # Compile main program
-main: main.cpp build/libmylib.a
-	$(CC) $(CFLAGS) main.cpp $(LDFLAGS) -o main
+main: main.cpp build/matrix.o
+	$(CC) $(CFLAGS) main.cpp build/matrix.o -o main
 
 # Ensure benchmark recompiles when matrix changes
 benchmark: benchmark.cpp build/libmylib.a
