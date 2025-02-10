@@ -3,6 +3,19 @@ CFLAGS = -std=c++17 -O3 -march=native -mavx2 -Wall -Wextra -Iinclude
 LDFLAGS = -Lbuild -lmylib
 OBJ = build/matrix.o
 
+
+# Detect OS and enable correct SIMD flags
+
+# UNAME_S := $(shell uname -s)
+
+# ifeq ($(UNAME_S), Darwin)  # macOS (Apple M1/M2)
+#     CFLAGS += -mcpu=apple-m1 -D__ARM_NEON
+# else  # Windows/Linux (Intel/AMD)
+#     ifeq ($(shell grep -q avx512 /proc/cpuinfo && echo yes),yes)
+#         CFLAGS += -mavx512f -D__AVX512F__
+#     endif
+# endif
+
 all: build/libmylib.a main benchmark
 
 build/matrix.o: src/matrix.cpp include/matrix.hpp

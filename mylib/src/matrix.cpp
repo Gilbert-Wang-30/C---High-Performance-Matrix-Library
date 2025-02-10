@@ -155,8 +155,10 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     Matrix result(rows, other.cols, 0.0);
     const int BLOCK_SIZE = 32;  // Tune for performance
+    
 
     if (hasAVX512()) {
+        #ifdef __AVX512F__
         std::cout << "Using AVX-512 optimization\n";
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
@@ -182,7 +184,9 @@ Matrix Matrix::multiply(const Matrix& other) const {
                 }
             }
         }
+        #endif
     } else if (hasAVX2()) {
+        #ifdef __AVX2__
         std::cout << "Using AVX2 optimization\n";
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
@@ -208,6 +212,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                 }
             }
         }
+        #endif
     }
 
     #ifdef __ARM_NEON  // Compile NEON code ONLY on macOS (ARM)
