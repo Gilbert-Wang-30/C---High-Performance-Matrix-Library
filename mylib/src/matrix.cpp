@@ -1,7 +1,7 @@
 #include "../include/matrix.hpp"
 
 // Constructor
-Matrix::Matrix() : rows(0), cols(0), data(nullptr) { }
+Matrix::Matrix() : rows(0), cols(0), data(nullptr), data_T(nullptr) { }
 
 Matrix::Matrix(int rows, int cols) : rows(rows), cols(cols) {
     data = new double[rows * cols];
@@ -148,7 +148,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     Matrix result(rows, other.cols, 0.0);
 
-    const int BLOCK_SIZE = 256;  // Tune for best performance
+    const int BLOCK_SIZE = 32;  // Tune for best performance
 
     for (int i = 0; i < rows; i += BLOCK_SIZE) {
         for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
