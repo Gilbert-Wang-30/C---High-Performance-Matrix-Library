@@ -5,14 +5,13 @@
 #include <vector>
 #include <immintrin.h>  // AVX, AVX2 intrinsics
 
-
-
 inline double _mm256_reduce_add_pd(__m256d v) {
-    __m128d sum1 = _mm256_castpd256_pd128(v);
-    __m128d sum2 = _mm256_extractf128_pd(v, 1);
-    sum1 = _mm_add_pd(sum1, sum2);
-    return _mm_cvtsd_f64(_mm_hadd_pd(sum1, sum1));
+    __m128d vlow  = _mm256_castpd256_pd128(v);
+    __m128d vhigh = _mm256_extractf128_pd(v, 1);
+    __m128d vsum  = _mm_add_pd(vlow, vhigh);
+    return _mm_cvtsd_f64(_mm_hadd_pd(vsum, vsum));
 }
+
 
 // inline double _mm512_reduce_add_pd(__m512d v) {
 //     __m256d low = _mm512_castpd512_pd256(v);

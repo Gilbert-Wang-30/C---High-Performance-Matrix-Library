@@ -245,39 +245,17 @@ Matrix Matrix::multiply(const Matrix& other) const {
     }
     #endif  // __ARM_NEON
     else {
-        std::cout << "Using scalar optimization\n";
-        for (int i = 0; i < rows; i += BLOCK_SIZE) {
-            for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
-                for (int k = 0; k < cols; k += BLOCK_SIZE) {
-    
-                    // Multiply small blocks of A and B^T
-                    for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
-                        int ii_offset = ii * cols;  //Precompute row start in `data`
-                        int result_offset = ii * other.cols;  //Precompute row start in `result.data`
-    
-                        for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
-                            int jj_offset = jj * other.rows;  //Precompute column start in `data_T`
-                            double sum = 0.0;
-    
-                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
-                                sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];  //Precomputed indices
-                            }
-    
-                            result.data[result_offset + jj] += sum;
-                        }
-                    }
+        std::cout << "Using scalar fallback\n";
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < other.cols; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < cols; k++) {
+                    sum += data[i * cols + k] * other.data[k * other.cols + j];
                 }
+                result.data[i * other.cols + j] = sum;
             }
         }
     }
 
-        
-    // Compute transposed matrix for result
-    for (int i = 0; i < result.rows; i++) {
-        int row_offset = i * result.cols;  //Precompute row start
-        for (int j = 0; j < result.cols; j++) {
-            result.data_T[j * result.rows + i] = result.data[row_offset + j];  //Faster transpose
-        }
-    }
     return result;
 }
