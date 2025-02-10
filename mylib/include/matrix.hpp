@@ -14,6 +14,15 @@ inline double _mm256_reduce_add_pd(__m256d v) {
     return _mm_cvtsd_f64(_mm_hadd_pd(sum1, sum1));
 }
 
+// inline double _mm512_reduce_add_pd(__m512d v) {
+//     __m256d low = _mm512_castpd512_pd256(v);
+//     __m256d high = _mm512_extractf64x4_pd(v, 1);
+//     __m256d sum256 = _mm256_add_pd(low, high);
+//     __m128d low128 = _mm256_castpd256_pd128(sum256);
+//     __m128d high128 = _mm256_extractf128_pd(sum256, 1);
+//     __m128d sum128 = _mm_add_pd(low128, high128);
+//     return _mm_cvtsd_f64(_mm_hadd_pd(sum128, sum128));
+// }
 
 
 

@@ -154,8 +154,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
     }
 
     Matrix result(rows, other.cols, 0.0);
-
-    const int BLOCK_SIZE = 32;  // Tune for best performance
+    const int BLOCK_SIZE = 32;  // Tune for performance
 
     if (hasAVX512()) {
         std::cout << "Using AVX-512 optimization\n";
@@ -174,7 +173,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                                 __m512d a = _mm512_loadu_pd(&data[ii_offset + kk]);
                                 __m512d b = _mm512_loadu_pd(&other.data_T[jj_offset + kk]);
                                 __m512d c = _mm512_mul_pd(a, b);
-                                sum += _mm512_reduce_add_pd(c);
+                                sum += _mm512_reduce_add_pd(c);  //
                             }
 
                             result.data[result_offset + jj] += sum;
@@ -211,7 +210,35 @@ Matrix Matrix::multiply(const Matrix& other) const {
         }
     }
 
+    #ifdef __ARM_NEON  // Compile NEON code ONLY on macOS (ARM)
+    else if (hasNEON()) {
+        std::cout << "Using NEON optimization\n";
+        for (int i = 0; i < rows; i += BLOCK_SIZE) {
+            for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
+                for (int k = 0; k < cols; k += BLOCK_SIZE) {
+                    for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
+                        int ii_offset = ii * cols;
+                        int result_offset = ii * other.cols;
 
+                        for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
+                            int jj_offset = jj * other.rows;
+                            double sum = 0.0;
+
+                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 2) {
+                                float64x2_t a = vld1q_f64(&data[ii_offset + kk]);
+                                float64x2_t b = vld1q_f64(&other.data_T[jj_offset + kk]);
+                                float64x2_t c = vmulq_f64(a, b);
+                                sum += vaddvq_f64(c);
+                            }
+
+                            result.data[result_offset + jj] += sum;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    #endif  // __ARM_NEON
     else {
         std::cout << "Using scalar fallback\n";
         for (int i = 0; i < rows; i++) {
