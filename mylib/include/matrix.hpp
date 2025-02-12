@@ -58,11 +58,10 @@ public:
     Matrix& operator+=(const Matrix& other);
     Matrix& operator-=(const Matrix& other);
     Matrix& operator*=(double scalar);
-    Matrix& operator*=(int scalar);
     Matrix& operator*=(const Matrix& other);
     Matrix& operator/=(double scalar);
-    inline bool operator==(const Matrix& other) const;
-    inline bool operator!=(const Matrix& other) const;
+    bool operator==(const Matrix& other) const;
+    bool operator!=(const Matrix& other) const;
 
     // Setter functions
     double set(int i, int j, double val);
@@ -77,6 +76,8 @@ public:
     Matrix subtract(const Matrix& other) const;
     Matrix multiply(double scalar) const;
     Matrix multiply(const Matrix& other) const;
+    void transpose();
+    Matrix get_transpose() const;
 
 
     

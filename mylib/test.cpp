@@ -1,11 +1,22 @@
 #include <iostream>
 #include "include/matrix.hpp"
+#include <cassert>
 
 using namespace std;
 
+// Function to compare two matrices with a small tolerance for floating-point precision
+bool areMatricesEqual(const Matrix& A, const Matrix& B, double tol = 1e-6) {
+    if (A.getRows() != B.getRows() || A.getCols() != B.getCols()) return false;
+    for (int i = 0; i < A.getRows(); i++) {
+        for (int j = 0; j < A.getCols(); j++) {
+            if (std::abs(A.get_row(i, j) - B.get_row(i, j)) > tol) return false;
+        }
+    }
+    return true;
+}
 
 
-void runArethmeticTests() {
+void runBasicArethmeticTests() {
     Matrix A(11, 13, 0.0);
     Matrix B(13, 15, 0.0);
 
@@ -117,12 +128,172 @@ void runArethmeticTests() {
 }
 
 
-void runOperatorTests(){
-    
+// ✅ 1️⃣ Arithmetic Operations Test
+void runArithmeticTests() {
+    std::cout << "Running Arithmetic Tests..." << std::endl;
+
+    Matrix A(2, 2, 3.0);  // 2x2 matrix filled with 3.0
+    Matrix B(2, 2, 1.5);  // 2x2 matrix filled with 1.5
+
+    // Addition
+    Matrix C = A + B;
+    assert(areMatricesEqual(C, Matrix(2, 2, 4.5)));
+
+    // Subtraction
+    C = A - B;
+    assert(areMatricesEqual(C, Matrix(2, 2, 1.5)));
+
+    // Scalar Multiplication
+    C = A * 2.0;
+    assert(areMatricesEqual(C, Matrix(2, 2, 6.0)));
+
+    // Scalar Division
+    C = A / 3.0;
+    assert(areMatricesEqual(C, Matrix(2, 2, 1.0)));
+
+    std::cout << "✅ Arithmetic Tests Passed!" << std::endl;
 }
 
+// ✅ 2️⃣ Move Assignment Test
+void runMoveAssignmentTests() {
+    std::cout << "Running Move Assignment Tests..." << std::endl;
 
+    Matrix A(3, 3, 5.0);
+    Matrix B = std::move(A); // Move constructor
+
+    assert(A.getRows() == 0 && A.getCols() == 0);  // A should be in a null state
+    assert(areMatricesEqual(B, Matrix(3, 3, 5.0)));
+
+    Matrix C(3, 3, 2.0);
+    C = std::move(B); // Move assignment
+
+    assert(B.getRows() == 0 && B.getCols() == 0);  // B should be in a null state
+    assert(areMatricesEqual(C, Matrix(3, 3, 5.0)));
+
+    std::cout << "✅ Move Assignment Tests Passed!" << std::endl;
+}
+
+// ✅ 3️⃣ Matrix Multiplication Tests
+void runMultiplicationTests() {
+    std::cout << "Running Multiplication Tests..." << std::endl;
+
+    Matrix A(2, 2, 1.0);
+    Matrix B(2, 2, 2.0);
+    Matrix C = A * B;  // Matrix multiplication
+
+    assert(areMatricesEqual(C, Matrix(2, 2, 4.0))); // 1x2 + 1x2 for each element
+
+    std::cout << "✅ Multiplication Tests Passed!" << std::endl;
+}
+
+// ✅ 4️⃣ Comparison Operators Tests
+void runComparisonTests() {
+    std::cout << "Running Comparison Tests..." << std::endl;
+
+    Matrix A(2, 2, 3.0);
+    Matrix B(2, 2, 3.0);
+    Matrix C(2, 2, 4.0);
+
+    assert(A == B);
+    assert(A != C);
+
+    std::cout << "✅ Comparison Tests Passed!" << std::endl;
+}
+
+// ✅ 5️⃣ Transpose Tests
+void runTransposeTests() {
+    std::cout << "Running Transpose Tests..." << std::endl;
+
+    Matrix A(2, 2);
+    A.set(0, 0, 1);
+    A.set(0, 1, 2);
+    A.set(1, 0, 3);
+    A.set(1, 1, 4);
+
+    Matrix T = A.get_transpose(); // Assuming multiply handles transpose
+
+    assert(T.get_row(0, 1) == 3);
+    assert(T.get_row(1, 0) == 2);
+
+    std::cout << "✅ Transpose Tests Passed!" << std::endl;
+}
+
+// ✅ 6️⃣ Edge Cases: Empty Matrix, Zero Matrix, Large Matrix
+void runEdgeCaseTests() {
+    std::cout << "Running Edge Case Tests..." << std::endl;
+
+    Matrix emptyMatrix;
+    assert(emptyMatrix.getRows() == 0 && emptyMatrix.getCols() == 0);
+
+    Matrix zeroMatrix(3, 3, 0.0);
+    assert(areMatricesEqual(zeroMatrix, Matrix(3, 3, 0.0)));
+
+    std::cout << "✅ Edge Case Tests Passed!" << std::endl;
+}
+
+// ✅ 7️⃣ In-Place Operations Tests (+=, -=, *=)
+void runInPlaceOperationsTests() {
+    std::cout << "Running In-Place Operations Tests..." << std::endl;
+
+    Matrix A(2, 2, 2.0);
+    Matrix B(2, 2, 3.0);
+
+    A += B;
+    assert(areMatricesEqual(A, Matrix(2, 2, 5.0)));
+
+    A -= B;
+    assert(areMatricesEqual(A, Matrix(2, 2, 2.0)));
+
+    A *= 2;
+    assert(areMatricesEqual(A, Matrix(2, 2, 4.0)));
+
+    std::cout << "✅ In-Place Operations Tests Passed!" << std::endl;
+}
+
+// ✅ 8️⃣ Large Matrix Performance Test
+void runLargeMatrixTest() {
+    std::cout << "Running Large Matrix Test..." << std::endl;
+
+    Matrix A(1000, 1000, 1.0);
+    Matrix B(1000, 1000, 2.0);
+
+    Matrix C = A + B;
+    assert(C.get_row(500, 500) == 3.0); // Mid-point check
+
+    std::cout << "✅ Large Matrix Test Passed!" << std::endl;
+}
+
+// ✅ 9️⃣ Exception Handling Tests (if applicable)
+void runExceptionTests() {
+    std::cout << "Running Exception Handling Tests..." << std::endl;
+
+    try {
+        Matrix A(2, 2);
+        Matrix B(3, 3);
+        Matrix C = A * B; // Should throw exception due to size mismatch
+        assert(false); // Should not reach here
+    } catch (...) {
+        std::cout << "✅ Exception Handling Test Passed!" << std::endl;
+    }
+}
+
+// ✅ 🔟 Final Run Function
+void runAllTests() {
+    runArithmeticTests();
+    runMoveAssignmentTests();
+    runMultiplicationTests();
+    runComparisonTests();
+    runTransposeTests();
+    runEdgeCaseTests();
+    runInPlaceOperationsTests();
+    runLargeMatrixTest();
+    runExceptionTests();
+}
+
+// ✅ Main Function to Run All Tests
 int main() {
-    //runArethmeticTests();
+    runAllTests();
+    std::cout << "🎉 ALL TESTS PASSED! 🎉" << std::endl;
     return 0;
 }
+

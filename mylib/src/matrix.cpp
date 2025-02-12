@@ -1,7 +1,9 @@
 #include "../include/matrix.hpp"
 #include "../include/simd_utils.hpp"
 //TODO can't include x86intrin.h in NEON
+
 #include <immintrin.h>  // AVX, AVX2 intrinsics
+
 #ifdef __ARM_NEON
     #include <arm_neon.h>  // Only include NEON if compiling for macOS ARM
 #endif
@@ -171,17 +173,17 @@ Matrix& Matrix::operator/=(double scalar){
     *this = multiply(1.0 / scalar);
     return *this;
 }
-bool Matrix::operator==(const Matrix& other) const{
-    for(int i = 0; i < rows * cols; i++){
-        if(data[i] != other.data[i]){
-            return false;
-        }
+bool Matrix::operator==(const Matrix& other) const {
+    if (rows != other.rows || cols != other.cols) return false;
+    for (int i = 0; i < rows * cols; i++) {
+        if (data[i] != other.data[i]) return false;
     }
     return true;
 }
 bool Matrix::operator!=(const Matrix& other) const{
     return !(*this == other);
 }
+
 
 // Setter function
 double Matrix::set(int i, int j, double val) {
@@ -369,5 +371,20 @@ Matrix Matrix::multiply(const Matrix& other) const {
         }
     }
 
+    return result;
+}
+
+// Transpose matrix
+void Matrix::transpose() {
+    double* temp = data;
+    data = data_T;
+    data_T = temp;    
+}
+
+// Get transpose of matrix
+Matrix Matrix::get_transpose() const {
+    Matrix result(cols, rows);
+    result = *this;
+    result.transpose();
     return result;
 }
