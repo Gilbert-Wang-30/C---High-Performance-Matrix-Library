@@ -2,10 +2,11 @@
 #include "../include/simd_utils.hpp"
 //TODO can't include x86intrin.h in NEON
 
-#include <immintrin.h>  // AVX, AVX2 intrinsics
 
 #ifdef __ARM_NEON
     #include <arm_neon.h>  // Only include NEON if compiling for macOS ARM
+#elif defined(__x86_64__) || defined(__i386__)  // Linux/macOS x86
+    #include <immintrin.h>  // AVX, AVX2, AVX-512
 #endif
 
 

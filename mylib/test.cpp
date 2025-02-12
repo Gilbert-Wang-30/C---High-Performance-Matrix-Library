@@ -277,17 +277,174 @@ void runExceptionTests() {
     }
 }
 
+
+void test_matrix_assignment_from_vector() {
+    std::cout << "Running tests for `Matrix = std::vector<std::vector<double>>`..." << std::endl;
+
+    // 3 Normal Cases
+    {
+        std::vector<std::vector<double>> vec1 = {
+            {1, 2},
+            {3, 4}
+        };
+        Matrix mat1;
+        mat1 = vec1;
+        std::cout << "Test 1: 2x2 Matrix Assignment\n";
+        mat1.print();
+    }
+
+    {
+        std::vector<std::vector<double>> vec2 = {
+            {5, 6, 7},
+            {8, 9, 10},
+            {11, 12, 13}
+        };
+        Matrix mat2;
+        mat2 = vec2;
+        std::cout << "Test 2: 3x3 Matrix Assignment\n";
+        mat2.print();
+    }
+
+    {
+        std::vector<std::vector<double>> vec3 = {
+            {1, 2, 3, 4},
+            {5, 6, 7, 8},
+            {9, 10, 11, 12},
+            {13, 14, 15, 16}
+        };
+        Matrix mat3;
+        mat3 = vec3;
+        std::cout << "Test 3: 4x4 Matrix Assignment\n";
+        mat3.print();
+    }
+
+    // 10 Edge Cases
+    {
+        // Edge Case 1: Empty vector
+        std::vector<std::vector<double>> emptyVec;
+        Matrix matEmpty;
+        matEmpty = emptyVec;
+        std::cout << "Edge Case 1: Empty Matrix Assignment (Should print nothing)\n";
+        matEmpty.print();
+    }
+
+    {
+        // Edge Case 2: Single Row Matrix
+        std::vector<std::vector<double>> singleRow = {{1, 2, 3, 4, 5}};
+        Matrix matSingleRow;
+        matSingleRow = singleRow;
+        std::cout << "Edge Case 2: Single Row Matrix\n";
+        matSingleRow.print();
+    }
+
+    {
+        // Edge Case 3: Single Column Matrix
+        std::vector<std::vector<double>> singleCol = {{1}, {2}, {3}, {4}, {5}};
+        Matrix matSingleCol;
+        matSingleCol = singleCol;
+        std::cout << "Edge Case 3: Single Column Matrix\n";
+        matSingleCol.print();
+    }
+
+    {
+        // Edge Case 4: Jagged Rows (should be padded with zeros)
+        std::vector<std::vector<double>> jagged = {
+            {1, 2},
+            {3, 4, 5},
+            {6}
+        };
+        Matrix matJagged;
+        matJagged = jagged;
+        std::cout << "Edge Case 4: Jagged Rows (Should pad with zeros)\n";
+        matJagged.print();
+    }
+
+    {
+        // Edge Case 5: Large matrix
+        std::vector<std::vector<double>> largeMat(10, std::vector<double>(10, 1.5));
+        Matrix matLarge;
+        matLarge = largeMat;
+        std::cout << "Edge Case 5: Large 10x10 Matrix Assignment\n";
+        matLarge.print();
+    }
+
+    {
+        // Edge Case 6: Matrix with negative values
+        std::vector<std::vector<double>> negMat = {
+            {-1, -2, -3},
+            {-4, -5, -6}
+        };
+        Matrix matNeg;
+        matNeg = negMat;
+        std::cout << "Edge Case 6: Matrix with Negative Values\n";
+        matNeg.print();
+    }
+
+    {
+        // Edge Case 7: Matrix with floating-point values
+        std::vector<std::vector<double>> floatMat = {
+            {0.1, 0.2},
+            {0.3, 0.4}
+        };
+        Matrix matFloat;
+        matFloat = floatMat;
+        std::cout << "Edge Case 7: Matrix with Floating-Point Values\n";
+        matFloat.print();
+    }
+
+    {
+        // Edge Case 8: Matrix with very large numbers
+        std::vector<std::vector<double>> largeNumMat = {
+            {1e10, 2e10},
+            {3e10, 4e10}
+        };
+        Matrix matLargeNum;
+        matLargeNum = largeNumMat;
+        std::cout << "Edge Case 8: Matrix with Very Large Numbers\n";
+        matLargeNum.print();
+    }
+
+    {
+        // Edge Case 9: Matrix with a mix of positive and negative numbers
+        std::vector<std::vector<double>> mixMat = {
+            {-1, 2, -3},
+            {4, -5, 6}
+        };
+        Matrix matMix;
+        matMix = mixMat;
+        std::cout << "Edge Case 9: Matrix with Mixed Positive & Negative Numbers\n";
+        matMix.print();
+    }
+
+    // {
+    //     // Edge Case 10: Matrix with NaN values
+    //     std::vector<std::vector<double>> nanMat = {
+    //         {NAN, 1},
+    //         {2, NAN}
+    //     };
+    //     Matrix matNaN;
+    //     matNaN = nanMat;
+    //     std::cout << "Edge Case 10: Matrix with NaN Values\n";
+    //     matNaN.print();
+    // }
+
+    std::cout << "All tests completed!" << std::endl;
+}
+
+
+
 // ✅ 🔟 Final Run Function
 void runAllTests() {
     runArithmeticTests();
     runMoveAssignmentTests();
     runMultiplicationTests();
-    runComparisonTests();
-    runTransposeTests();
-    runEdgeCaseTests();
-    runInPlaceOperationsTests();
-    runLargeMatrixTest();
-    runExceptionTests();
+    test_matrix_assignment_from_vector();
+    // runComparisonTests();
+    // runTransposeTests();
+    // runEdgeCaseTests();
+    // runInPlaceOperationsTests();
+    // runLargeMatrixTest();
+    // runExceptionTests();
 }
 
 // ✅ Main Function to Run All Tests

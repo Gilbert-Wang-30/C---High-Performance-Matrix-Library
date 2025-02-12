@@ -3,16 +3,16 @@
 
 #include <iostream>
 
-#ifdef _MSC_VER
-    #include <intrin.h>  // AVX, AVX512 intrinsics
-//TODO can't include x86intrin.h in NEON
-#else
+// Detect OS and Architecture
+#if defined(__ARM_NEON) || defined(__aarch64__)  // NEON (macOS ARM)
+    #include <arm_neon.h>  // Use NEON intrinsics
+#elif defined(_MSC_VER)  // Windows (MSVC)
+    #include <intrin.h>  // MSVC intrinsics (AVX, AVX2, AVX-512)
+#elif defined(__x86_64__) || defined(__i386__)  // Linux/macOS x86
+    #include <immintrin.h>  // AVX, AVX2, AVX-512
     #include <x86intrin.h>
 #endif
 
-#ifdef __ARM_NEON
-    #include <arm_neon.h>  // NEON for macOS (ARM)
-#endif
 
 inline bool hasAVX512() {
 #ifdef __AVX512F__
