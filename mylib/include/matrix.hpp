@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <vector>
+//TODO can't include x86intrin.h in NEON
 #include <immintrin.h>  // AVX, AVX2 intrinsics
 
+//TODO can't include x86intrin.h in NEON
 inline double _mm256_reduce_add_pd(__m256d v) {
     __m128d vlow  = _mm256_castpd256_pd128(v);
     __m128d vhigh = _mm256_extractf128_pd(v, 1);
@@ -44,6 +46,9 @@ public:
     // Operator overloading
     double get_row(int i, int j) const;
     double get_col(int i, int j) const;
+    Matrix& operator=(const Matrix& other);
+    Matrix& operator=(Matrix&& other) noexcept;
+    Matrix& operator=(std::vector<std::vector<double>> vec);
     Matrix operator+(const Matrix& other) const;
     Matrix operator-(const Matrix& other) const;
     Matrix operator*(double scalar) const;
@@ -51,8 +56,8 @@ public:
     Matrix operator/(double scalar) const;
     Matrix& operator+=(const Matrix& other);
     Matrix& operator-=(const Matrix& other);
-    Matrix &operator*=(double scalar);
-    Matrix &operator*=(int scalar);
+    Matrix& operator*=(double scalar);
+    Matrix& operator*=(int scalar);
     Matrix& operator*=(const Matrix& other);
     Matrix& operator/=(double scalar);
     inline bool operator==(const Matrix& other) const;

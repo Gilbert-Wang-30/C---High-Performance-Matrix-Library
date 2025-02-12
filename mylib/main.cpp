@@ -4,12 +4,46 @@
 using namespace std;
 
 void runTests() {
-    Matrix A(2, 2, 1.0);
-    Matrix B(2, 2, 2.0);
+    Matrix A(11, 13, 0.0);
+    Matrix B(13, 15, 0.0);
+
+    // Set specific values for Matrix A
+    A.set(0, 1, 23.45);
+    A.set(1, 5, 12.78);
+    A.set(2, 9, 34.56);
+    A.set(3, 2, 78.91);
+    A.set(4, 6, 45.32);
+    A.set(5, 10, 67.89);
+    A.set(6, 3, 89.01);
+    A.set(7, 7, 56.78);
+    A.set(8, 12, 90.12);
+    A.set(9, 0, 34.98);
+    A.set(10, 11, 78.23);
+
+    // Set specific values for Matrix B
+    B.set(0, 2, 11.34);
+    B.set(1, 4, 22.56);
+    B.set(2, 6, 33.78);
+    B.set(3, 8, 44.90);
+    B.set(4, 10, 55.12);
+    B.set(5, 12, 66.34);
+    B.set(6, 14, 77.56);
+    B.set(7, 1, 88.78);
+    B.set(8, 3, 99.90);
+    B.set(9, 5, 10.12);
+    B.set(10, 7, 21.34);
+    B.set(11, 9, 32.56);
+    B.set(12, 11, 43.78);
+
+    // Perform multiplication
     Matrix C = A * B;
+    // Matrix A(2, 2, 1.0);
+    // Matrix B(2, 2, 2.0);
+    //Matrix C = A * B;
 
     cout << "Test 1: Basic 2x2 Multiplication\n";
     C.print();
+    double x = C.get_row(1, 12);
 
     Matrix Zero(2, 2, 0.0);
     Matrix D = A * Zero;

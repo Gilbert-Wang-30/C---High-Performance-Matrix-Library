@@ -5,6 +5,7 @@
 
 #ifdef _MSC_VER
     #include <intrin.h>  // AVX, AVX512 intrinsics
+//TODO can't include x86intrin.h in NEON
 #else
     #include <x86intrin.h>
 #endif

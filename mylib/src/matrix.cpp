@@ -1,5 +1,6 @@
 #include "../include/matrix.hpp"
 #include "../include/simd_utils.hpp"
+//TODO can't include x86intrin.h in NEON
 #include <immintrin.h>  // AVX, AVX2 intrinsics
 #ifdef __ARM_NEON
     #include <arm_neon.h>  // Only include NEON if compiling for macOS ARM
@@ -43,6 +44,34 @@ double Matrix::get_col(int i, int j) const {
 }
 
 // Operator overloading
+Matrix& Matrix::operator=(const Matrix& other) {
+    if (this == &other) {
+        return *this;  // Self-assignment guard
+    }
+
+    // Only reallocate memory if dimensions are different
+    if (rows != other.rows || cols != other.cols) {
+        delete[] data;
+        delete[] data_T;
+
+        rows = other.rows;
+        cols = other.cols;
+
+        data = new double[rows * cols];
+        data_T = new double[rows * cols];
+    }
+
+    // Copy elements
+    for (int i = 0; i < rows * cols; i++) {
+        data[i] = other.data[i];
+        data_T[i] = other.data_T[i];
+    }
+
+    return *this;
+}
+
+
+
 Matrix Matrix::operator+(const Matrix& other) const{
     return add(other);
 }
@@ -171,13 +200,19 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             int jj_offset = jj * other.rows;
                             double sum = 0.0;
 
-                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 8) {
+                            int kk = k;
+                            // Process using AVX2 in chunks of 4
+                            for (; kk + 4 <= std::min(k + BLOCK_SIZE, cols); kk += 8) {
                                 __m512d a = _mm512_loadu_pd(&data[ii_offset + kk]);
                                 __m512d b = _mm512_loadu_pd(&other.data_T[jj_offset + kk]);
                                 __m512d c = _mm512_mul_pd(a, b);
                                 sum += _mm512_reduce_add_pd(c);  //
                             }
-
+        
+                            // Process remaining elements with scalar operations
+                            for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
+                                sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
+                            }
                             result.data[result_offset + jj] += sum;
                         }
                     }
@@ -199,13 +234,20 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             int jj_offset = jj * other.rows;
                             double sum = 0.0;
 
-                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 4) {
+                            int kk = k;
+                            // Process using AVX2 in chunks of 4
+                            for (; kk + 4 <= std::min(k + BLOCK_SIZE, cols); kk += 4) {
                                 __m256d a = _mm256_loadu_pd(&data[ii_offset + kk]);
                                 __m256d b = _mm256_loadu_pd(&other.data_T[jj_offset + kk]);
                                 __m256d c = _mm256_mul_pd(a, b);
                                 sum += _mm256_reduce_add_pd(c);
                             }
-
+        
+                            // Process remaining elements with scalar operations
+                            for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
+                                sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
+                            }
+        
                             result.data[result_offset + jj] += sum;
                         }
                     }
@@ -229,13 +271,19 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             int jj_offset = jj * other.rows;
                             double sum = 0.0;
 
-                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk += 2) {
+                            int kk = k;
+                            // Process using NEON in chunks of 2
+                            for (; kk + 2 <= std::min(k + BLOCK_SIZE, cols); kk += 2) {
                                 float64x2_t a = vld1q_f64(&data[ii_offset + kk]);
                                 float64x2_t b = vld1q_f64(&other.data_T[jj_offset + kk]);
                                 float64x2_t c = vmulq_f64(a, b);
                                 sum += vaddvq_f64(c);
                             }
 
+                            // Process remaining elements with scalar operations
+                            for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
+                                sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
+                            }
                             result.data[result_offset + jj] += sum;
                         }
                     }
