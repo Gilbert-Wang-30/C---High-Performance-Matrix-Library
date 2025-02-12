@@ -16,7 +16,7 @@ OBJ = build/matrix.o
 #     endif
 # endif
 
-all: build/libmylib.a main benchmark
+all: build/libmylib.a main benchmark test
 
 build/matrix.o: src/matrix.cpp include/matrix.hpp
 	$(CC) $(CFLAGS) -c src/matrix.cpp -o build/matrix.o
@@ -24,11 +24,15 @@ build/matrix.o: src/matrix.cpp include/matrix.hpp
 build/libmylib.a: $(OBJ)
 	ar rcs $@ $^
 
+
 main: main.cpp build/libmylib.a
 	$(CC) $(CFLAGS) main.cpp $(LDFLAGS) -o main
 
 benchmark: benchmark.cpp build/libmylib.a
 	$(CC) $(CFLAGS) benchmark.cpp $(LDFLAGS) -o benchmark
+
+test: test.cpp build/libmylib.a
+	$(CC) $(CFLAGS) test.cpp $(LDFLAGS) -o test
 
 # Platform-Specific Cleanup
 ifeq ($(OS),Windows_NT)

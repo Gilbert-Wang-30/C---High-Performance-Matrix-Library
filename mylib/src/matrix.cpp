@@ -123,7 +123,7 @@ Matrix& Matrix::operator=(std::vector<std::vector<double>> vec){
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            if(j < vec[i].size()){
+            if(j < (int)vec[i].size()){
                 data[i * cols + j] = vec[i][j];
                 data_T[j * rows + i] = vec[i][j];
             } else {
