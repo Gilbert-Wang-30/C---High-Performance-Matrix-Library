@@ -39,6 +39,7 @@ public:
     Matrix();
     Matrix(int rows, int cols);
     Matrix(int rows, int cols, double val);
+    Matrix(Matrix&& other) noexcept;
 
     // Destructor
     ~Matrix();

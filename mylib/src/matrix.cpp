@@ -25,6 +25,15 @@ Matrix::Matrix(int rows, int cols, double val) : rows(rows), cols(cols) {
     }
 }
 
+Matrix::Matrix(Matrix&& other) noexcept
+    : rows(other.rows), cols(other.cols), data(other.data), data_T(other.data_T) {
+    other.data = nullptr;
+    other.data_T = nullptr;
+    other.rows = 0;
+    other.cols = 0;
+}
+
+
 // Destructor
 Matrix::~Matrix() {
     delete[] data;
@@ -44,25 +53,21 @@ double Matrix::get_col(int i, int j) const {
 }
 
 // Operator overloading
-Matrix& Matrix::operator=(const Matrix& other) {
+Matrix& Matrix::operator=(const Matrix& other){
     if (this == &other) {
-        return *this;  // Self-assignment guard
+        return *this;
     }
 
-    // Only reallocate memory if dimensions are different
-    if (rows != other.rows || cols != other.cols) {
-        delete[] data;
-        delete[] data_T;
+    rows = other.rows;
+    cols = other.cols;
 
-        rows = other.rows;
-        cols = other.cols;
+    delete[] data;
+    delete[] data_T;
 
-        data = new double[rows * cols];
-        data_T = new double[rows * cols];
-    }
+    data = new double[rows * cols];
+    data_T = new double[rows * cols];
 
-    // Copy elements
-    for (int i = 0; i < rows * cols; i++) {
+    for (int i = 0; i < rows* cols; i++) {
         data[i] = other.data[i];
         data_T[i] = other.data_T[i];
     }
@@ -70,7 +75,66 @@ Matrix& Matrix::operator=(const Matrix& other) {
     return *this;
 }
 
+Matrix& Matrix::operator=(Matrix&& other) noexcept {
+    if (this == &other) {
+        return *this;
+    }
 
+    rows = other.rows;
+    cols = other.cols;
+
+    delete[] data;
+    delete[] data_T;
+
+    data = other.data;
+    data_T = other.data_T;
+
+    other.data = nullptr;
+    other.data_T = nullptr;
+    other.rows = 0;
+    other.cols = 0;
+
+    return *this;
+}
+
+Matrix& Matrix::operator=(std::vector<std::vector<double>> vec){
+    if(vec.size() == 0){
+        rows = 0;
+        cols = 0;
+        delete[] data;
+        delete[] data_T;
+        data = nullptr;
+        data_T = nullptr;
+        return *this;
+    }
+    rows = vec.size();
+    int cols = 0;
+    for(int i = 0; i < rows; i++){
+        if(vec[i].size() != vec[0].size()){
+            cols = std::max(cols, (int)vec[i].size());
+        }
+    }
+
+    delete[] data;
+    delete[] data_T;
+
+    data = new double[rows * cols];
+    data_T = new double[rows * cols];
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if(j < vec[i].size()){
+                data[i * cols + j] = vec[i][j];
+                data_T[j * rows + i] = vec[i][j];
+            } else {
+                data[i * cols + j] = 0.0;
+                data_T[j * rows + i] = 0.0;
+            }
+        }
+    }
+
+    return *this;
+}
 
 Matrix Matrix::operator+(const Matrix& other) const{
     return add(other);
