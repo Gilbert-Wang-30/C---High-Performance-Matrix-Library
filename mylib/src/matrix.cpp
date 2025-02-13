@@ -249,41 +249,43 @@ Matrix Matrix::multiply(const Matrix& other) const {
     }
 
     Matrix result(rows, other.cols, 0.0);
-    const int BLOCK_SIZE = 32;  // Tune for performance
+    const int BLOCK_SIZE = 64;  // Tune for performance
     
 
     if (hasAVX512()) {
         #ifdef __AVX512F__
-        std::cout << "Using AVX-512 optimization\n";
-        int num_threads = omp_get_max_threads();  // Get the maximum number of threads available
+        std::cout << "Using optimized AVX-512 implementation\n";
+        int num_threads = omp_get_max_threads();
         std::cout << "Using " << num_threads << " threads for OpenMP parallelization\n";
-        #pragma omp parallel for collapse(2)  // Parallelize i and j loops
-
+    
+        #pragma omp parallel for collapse(2)
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
                 for (int k = 0; k < cols; k += BLOCK_SIZE) {
                     for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
                         int ii_offset = ii * cols;
                         int result_offset = ii * other.cols;
-
+    
                         for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
                             int jj_offset = jj * other.rows;
-                            double sum = 0.0;
-
+                            __m512d sum_vec = _mm512_setzero_pd(); // Use AVX-512 register for accumulation
+    
                             int kk = k;
-                            // Process using AVX-512 in chunks of 8
-                            for (; kk + 4 <= std::min(k + BLOCK_SIZE, cols); kk += 8) {
+                            for (; kk + 8 <= std::min(k + BLOCK_SIZE, cols); kk += 8) {
                                 __m512d a = _mm512_loadu_pd(&data[ii_offset + kk]);
                                 __m512d b = _mm512_loadu_pd(&other.data_T[jj_offset + kk]);
-                                __m512d c = _mm512_mul_pd(a, b);
-                                sum += _mm512_reduce_add_pd(c);  //
+                                sum_vec = _mm512_fmadd_pd(a, b, sum_vec); // Fused Multiply-Add
                             }
-        
-                            // Process remaining elements with scalar operations
+    
+                            // Reduce vector sum to a scalar
+                            double sum = _mm512_reduce_add_pd(sum_vec);
+    
+                            // Process remaining scalar elements
                             for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
                                 sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
                             }
-                            #pragma omp atomic  // Prevent race conditions on result matrix
+    
+                            // Store result **only once per iteration**, eliminating atomic contention
                             result.data[result_offset + jj] += sum;
                         }
                     }
@@ -291,7 +293,8 @@ Matrix Matrix::multiply(const Matrix& other) const {
             }
         }
         #endif
-    } else if (hasAVX2()) {
+    }
+    else if (hasAVX2()) {
         #ifdef __AVX2__
         std::cout << "Using AVX2 optimization\n";
         #pragma omp parallel for collapse(2)  // Parallelize i and j loops
