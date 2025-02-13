@@ -128,7 +128,7 @@ void runBasicArethmeticTests() {
 }
 
 
-// ✅ 1️⃣ Arithmetic Operations Test
+//  1️⃣ Arithmetic Operations Test
 void runArithmeticTests() {
     std::cout << "Running Arithmetic Tests..." << std::endl;
 
@@ -150,11 +150,12 @@ void runArithmeticTests() {
     // Scalar Division
     C = A / 3.0;
     assert(areMatricesEqual(C, Matrix(2, 2, 1.0)));
+    C.print();
 
-    std::cout << "✅ Arithmetic Tests Passed!" << std::endl;
+    std::cout << "Arithmetic Tests Passed!" << std::endl;
 }
 
-// ✅ 2️⃣ Move Assignment Test
+//  2️⃣ Move Assignment Test
 void runMoveAssignmentTests() {
     std::cout << "Running Move Assignment Tests..." << std::endl;
 
@@ -170,10 +171,10 @@ void runMoveAssignmentTests() {
     assert(B.getRows() == 0 && B.getCols() == 0);  // B should be in a null state
     assert(areMatricesEqual(C, Matrix(3, 3, 5.0)));
 
-    std::cout << "✅ Move Assignment Tests Passed!" << std::endl;
+    std::cout << " Move Assignment Tests Passed!" << std::endl;
 }
 
-// ✅ 3️⃣ Matrix Multiplication Tests
+//  3️⃣ Matrix Multiplication Tests
 void runMultiplicationTests() {
     std::cout << "Running Multiplication Tests..." << std::endl;
 
@@ -183,10 +184,10 @@ void runMultiplicationTests() {
 
     assert(areMatricesEqual(C, Matrix(2, 2, 4.0))); // 1x2 + 1x2 for each element
 
-    std::cout << "✅ Multiplication Tests Passed!" << std::endl;
+    std::cout << " Multiplication Tests Passed!" << std::endl;
 }
 
-// ✅ 4️⃣ Comparison Operators Tests
+//  4️⃣ Comparison Operators Tests
 void runComparisonTests() {
     std::cout << "Running Comparison Tests..." << std::endl;
 
@@ -197,10 +198,10 @@ void runComparisonTests() {
     assert(A == B);
     assert(A != C);
 
-    std::cout << "✅ Comparison Tests Passed!" << std::endl;
+    std::cout << " Comparison Tests Passed!" << std::endl;
 }
 
-// ✅ 5️⃣ Transpose Tests
+//  5️⃣ Transpose Tests
 void runTransposeTests() {
     std::cout << "Running Transpose Tests..." << std::endl;
 
@@ -215,10 +216,10 @@ void runTransposeTests() {
     assert(T.get_row(0, 1) == 3);
     assert(T.get_row(1, 0) == 2);
 
-    std::cout << "✅ Transpose Tests Passed!" << std::endl;
+    std::cout << " Transpose Tests Passed!" << std::endl;
 }
 
-// ✅ 6️⃣ Edge Cases: Empty Matrix, Zero Matrix, Large Matrix
+//  6️⃣ Edge Cases: Empty Matrix, Zero Matrix, Large Matrix
 void runEdgeCaseTests() {
     std::cout << "Running Edge Case Tests..." << std::endl;
 
@@ -228,10 +229,10 @@ void runEdgeCaseTests() {
     Matrix zeroMatrix(3, 3, 0.0);
     assert(areMatricesEqual(zeroMatrix, Matrix(3, 3, 0.0)));
 
-    std::cout << "✅ Edge Case Tests Passed!" << std::endl;
+    std::cout << " Edge Case Tests Passed!" << std::endl;
 }
 
-// ✅ 7️⃣ In-Place Operations Tests (+=, -=, *=)
+//  7️⃣ In-Place Operations Tests (+=, -=, *=)
 void runInPlaceOperationsTests() {
     std::cout << "Running In-Place Operations Tests..." << std::endl;
 
@@ -247,10 +248,10 @@ void runInPlaceOperationsTests() {
     A *= 2;
     assert(areMatricesEqual(A, Matrix(2, 2, 4.0)));
 
-    std::cout << "✅ In-Place Operations Tests Passed!" << std::endl;
+    std::cout << " In-Place Operations Tests Passed!" << std::endl;
 }
 
-// ✅ 8️⃣ Large Matrix Performance Test
+//  8️⃣ Large Matrix Performance Test
 void runLargeMatrixTest() {
     std::cout << "Running Large Matrix Test..." << std::endl;
 
@@ -260,10 +261,10 @@ void runLargeMatrixTest() {
     Matrix C = A + B;
     assert(C.get_row(500, 500) == 3.0); // Mid-point check
 
-    std::cout << "✅ Large Matrix Test Passed!" << std::endl;
+    std::cout << " Large Matrix Test Passed!" << std::endl;
 }
 
-// ✅ 9️⃣ Exception Handling Tests (if applicable)
+//  9️⃣ Exception Handling Tests (if applicable)
 void runExceptionTests() {
     std::cout << "Running Exception Handling Tests..." << std::endl;
 
@@ -273,7 +274,7 @@ void runExceptionTests() {
         Matrix C = A * B; // Should throw exception due to size mismatch
         assert(false); // Should not reach here
     } catch (...) {
-        std::cout << "✅ Exception Handling Test Passed!" << std::endl;
+        std::cout << " Exception Handling Test Passed!" << std::endl;
     }
 }
 
@@ -291,6 +292,7 @@ void test_matrix_assignment_from_vector() {
         mat1 = vec1;
         std::cout << "Test 1: 2x2 Matrix Assignment\n";
         mat1.print();
+        cout<< "Rows: " << mat1.getRows() << " Cols: " << mat1.getCols() << endl;
     }
 
     {
@@ -318,7 +320,6 @@ void test_matrix_assignment_from_vector() {
         mat3.print();
     }
 
-    // 10 Edge Cases
     {
         // Edge Case 1: Empty vector
         std::vector<std::vector<double>> emptyVec;
@@ -433,7 +434,7 @@ void test_matrix_assignment_from_vector() {
 
 
 
-// ✅ 🔟 Final Run Function
+//  🔟 Final Run Function
 void runAllTests() {
     runArithmeticTests();
     runMoveAssignmentTests();
@@ -447,10 +448,10 @@ void runAllTests() {
     // runExceptionTests();
 }
 
-// ✅ Main Function to Run All Tests
+//  Main Function to Run All Tests
 int main() {
     runAllTests();
-    std::cout << "🎉 ALL TESTS PASSED! 🎉" << std::endl;
+    std::cout << "ALL TESTS PASSED!" << std::endl;
     return 0;
 }
 

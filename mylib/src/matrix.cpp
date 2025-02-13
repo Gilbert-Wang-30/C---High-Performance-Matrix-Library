@@ -111,11 +111,9 @@ Matrix& Matrix::operator=(std::vector<std::vector<double>> vec){
         return *this;
     }
     rows = vec.size();
-    int cols = 0;
+    cols = 0;
     for(int i = 0; i < rows; i++){
-        if(vec[i].size() != vec[0].size()){
-            cols = std::max(cols, (int)vec[i].size());
-        }
+        cols = std::max(cols, (int)vec[i].size());
     }
 
     delete[] data;
