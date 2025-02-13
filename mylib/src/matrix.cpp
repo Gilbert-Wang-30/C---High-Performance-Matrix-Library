@@ -369,13 +369,26 @@ Matrix Matrix::multiply(const Matrix& other) const {
     #endif  // __ARM_NEON
     else {
         std::cout << "Using scalar fallback\n";
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < other.cols; j++) {
-                double sum = 0.0;
-                for (int k = 0; k < cols; k++) {
-                    sum += data[i * cols + k] * other.data[k * other.cols + j];
+        #pragma omp parallel for collapse(2)  // Parallelize i and j loops
+        for (int i = 0; i < rows; i += BLOCK_SIZE) {
+            for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
+                for (int k = 0; k < cols; k += BLOCK_SIZE) {
+                    for (int ii = i; ii < std::min(i + BLOCK_SIZE, rows); ii++) {
+                        int ii_offset = ii * cols;
+                        int result_offset = ii * other.cols;
+
+                        for (int jj = j; jj < std::min(j + BLOCK_SIZE, other.cols); jj++) {
+                            int jj_offset = jj * other.rows;
+                            double sum = 0.0;
+
+                            for (int kk = k; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
+                                sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
+                            }
+                            #pragma omp atomic  // Prevent race conditions on result matrix
+                            result.data[result_offset + jj] += sum;
+                        }
+                    }
                 }
-                result.data[i * other.cols + j] = sum;
             }
         }
     }
