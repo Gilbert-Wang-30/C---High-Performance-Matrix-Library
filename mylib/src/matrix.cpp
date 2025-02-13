@@ -271,7 +271,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             double sum = 0.0;
 
                             int kk = k;
-                            // Process using AVX2 in chunks of 4
+                            // Process using AVX-512 in chunks of 8
                             for (; kk + 4 <= std::min(k + BLOCK_SIZE, cols); kk += 8) {
                                 __m512d a = _mm512_loadu_pd(&data[ii_offset + kk]);
                                 __m512d b = _mm512_loadu_pd(&other.data_T[jj_offset + kk]);
