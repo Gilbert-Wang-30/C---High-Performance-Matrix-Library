@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = -std=c++17 -O3 -march=native -mavx2 -Wall -Wextra -Iinclude
-LDFLAGS = -Lbuild -lmylib
+CFLAGS = -std=c++17 -O3 -march=native -mavx2 -fopenmp -Wall -Wextra -Iinclude
+LDFLAGS = -Lbuild -lmylib -fopenmp 
 OBJ = build/matrix.o
 
 

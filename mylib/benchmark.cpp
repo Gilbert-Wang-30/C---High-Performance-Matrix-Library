@@ -26,8 +26,8 @@ int main() {
     benchmarkMatrixMultiplication(1024);  // Large test case (if system can handle it)
     benchmarkMatrixMultiplication(2048);  // Large test case (if system can handle it)
     benchmarkMatrixMultiplication(4096);  // Large test case (if system can handle it)
-    //benchmarkMatrixMultiplication(8192);  // Large test case (if system can handle it)
-    //benchmarkMatrixMultiplication(16384);  // Large test case (if system can handle it)
+    benchmarkMatrixMultiplication(8192);  // Large test case (if system can handle it)
+    benchmarkMatrixMultiplication(16384);  // Large test case (if system can handle it)
 
     return 0;
 }

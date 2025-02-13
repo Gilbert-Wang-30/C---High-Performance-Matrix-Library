@@ -1,6 +1,7 @@
 #include "../include/matrix.hpp"
 #include "../include/simd_utils.hpp"
 //TODO can't include x86intrin.h in NEON
+#include <omp.h>
 
 
 #ifdef __ARM_NEON
@@ -254,6 +255,10 @@ Matrix Matrix::multiply(const Matrix& other) const {
     if (hasAVX512()) {
         #ifdef __AVX512F__
         std::cout << "Using AVX-512 optimization\n";
+        int num_threads = omp_get_max_threads();  // Get the maximum number of threads available
+        std::cout << "Using " << num_threads << " threads for OpenMP parallelization\n";
+        #pragma omp parallel for collapse(2)  // Parallelize i and j loops
+
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
                 for (int k = 0; k < cols; k += BLOCK_SIZE) {
@@ -278,6 +283,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
                                 sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
                             }
+                            #pragma omp atomic  // Prevent race conditions on result matrix
                             result.data[result_offset + jj] += sum;
                         }
                     }
@@ -288,6 +294,8 @@ Matrix Matrix::multiply(const Matrix& other) const {
     } else if (hasAVX2()) {
         #ifdef __AVX2__
         std::cout << "Using AVX2 optimization\n";
+        #pragma omp parallel for collapse(2)  // Parallelize i and j loops
+
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
                 for (int k = 0; k < cols; k += BLOCK_SIZE) {
@@ -312,7 +320,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
                                 sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
                             }
-        
+                            #pragma omp atomic  // Prevent race conditions on result matrix
                             result.data[result_offset + jj] += sum;
                         }
                     }
@@ -325,6 +333,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
     #ifdef __ARM_NEON  // Compile NEON code ONLY on macOS (ARM)
     else if (hasNEON()) {
         std::cout << "Using NEON optimization\n";
+        #pragma omp parallel for collapse(2)  // Parallelize i and j loops
         for (int i = 0; i < rows; i += BLOCK_SIZE) {
             for (int j = 0; j < other.cols; j += BLOCK_SIZE) {
                 for (int k = 0; k < cols; k += BLOCK_SIZE) {
@@ -349,6 +358,7 @@ Matrix Matrix::multiply(const Matrix& other) const {
                             for (; kk < std::min(k + BLOCK_SIZE, cols); kk++) {
                                 sum += data[ii_offset + kk] * other.data_T[jj_offset + kk];
                             }
+                            #pragma omp atomic  // Prevent race conditions on result matrix
                             result.data[result_offset + jj] += sum;
                         }
                     }
