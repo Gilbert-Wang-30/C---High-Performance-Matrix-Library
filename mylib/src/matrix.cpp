@@ -250,7 +250,33 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     Matrix result(rows, other.cols, 0.0);
     const int BLOCK_SIZE = 64;  // Tune for performance
-    
+    try {
+        long long total_elements = rows * cols * other.rows;  // Total number of elements involved in the matrix multiplication
+        
+        if(total_elements ==0){
+            omp_set_num_threads(32);
+            std::cout << "Using 32 threads for matrix size " << rows << "x" << cols << " and " << other.rows << " rows" << std::endl;
+        }
+        else if (total_elements < 1e6) {  // Small matrix (less than 1 million elements)
+            omp_set_num_threads(4);
+            std::cout << "Using 4 threads for matrix size " << rows << "x" << cols << " and " << other.rows << " rows" << std::endl;
+        } else if (total_elements < 1e8) {  // Medium matrix (less than 100 million elements)
+            omp_set_num_threads(8);
+            std::cout << "Using 8 threads for matrix size " << rows << "x" << cols << " and " << other.rows << " rows" << std::endl;
+        } else if (total_elements < 1e9) {  // Large matrix (less than 1 billion elements)
+            omp_set_num_threads(16);
+            std::cout << "Using 16 threads for matrix size " << rows << "x" << cols << " and " << other.rows << " rows" << std::endl;
+        } else {  // Very large matrix (1 billion elements or more)
+            omp_set_num_threads(32);
+            std::cout << "Using 32 threads for matrix size " << rows << "x" << cols << " and " << other.rows << " rows" << std::endl;
+        }
+    } catch (...) {
+        // In case of error (e.g., if the thread count exceeds available resources)
+        int available_threads = omp_get_max_threads();
+        omp_set_num_threads(available_threads);  // Set to maximum available threads
+        std::cerr << "Error: Falling back to " << available_threads << " threads due to an error." << std::endl;
+    }
+
 
     if (hasAVX512()) {
         #ifdef __AVX512F__
